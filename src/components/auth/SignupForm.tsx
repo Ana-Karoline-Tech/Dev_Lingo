@@ -35,6 +35,22 @@ export function SignUpForm() {
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Name Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-800 mb-2">
+              Nome
+            </label>
+            <input
+              type="text"
+              placeholder="Seu nome completo"
+              {...register('name')}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8b21cf] focus:ring-2 focus:ring-[#8b21cf] focus:ring-opacity-20 transition-all"
+            />
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+            )}
+          </div>
+
           {/* Email Field */}
           <div>
             <label className="block text-sm font-medium text-gray-800 mb-2">
@@ -111,7 +127,7 @@ export function SignUpForm() {
           <p className="text-center text-gray-700">
             Já tem uma conta?{' '}
             <Link
-              to="/login"
+              to="/signin"
               className="text-[#8b21cf] font-semibold hover:underline"
             >
               Faça login

@@ -6,6 +6,10 @@ export const Route = createFileRoute('/')({
 });
 
 function IndexComponent() {
-  return <LoadingScreen />;
+  return (
+    <div className="min-h-screen bg-[#8b21cf]">
+      <LoadingScreen />
+    </div>
+  );
 }
 
