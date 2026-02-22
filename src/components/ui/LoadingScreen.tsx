@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import loaderImage from '@/assets/images/devlingo-loader.png';
 import '../LoadingScreen.css';
 
@@ -9,6 +10,7 @@ type LoadingScreenProps = {
 export default function LoadingScreen({ onFinish }: LoadingScreenProps) {
   const [isFading, setIsFading] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fadeTimer = window.setTimeout(() => {
@@ -18,13 +20,14 @@ export default function LoadingScreen({ onFinish }: LoadingScreenProps) {
     const hideTimer = window.setTimeout(() => {
       setIsVisible(false);
       onFinish?.();
+      navigate({ to: '/signin' });
     }, 2700);
 
     return () => {
       window.clearTimeout(fadeTimer);
       window.clearTimeout(hideTimer);
     };
-  }, [onFinish]);
+  }, [onFinish, navigate]);
 
   if (!isVisible) return null;
 
