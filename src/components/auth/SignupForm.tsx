@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from '@tanstack/react-router';
 import { signupSchema, type SignupFormData } from '@/schemas/signupSchema';
 import { Loader2 } from 'lucide-react';
+import { createUserProfile } from '@/services/userService';
 
 export function SignUpForm() {
   const {
@@ -13,14 +15,23 @@ export function SignUpForm() {
     resolver: zodResolver(signupSchema),
     mode: 'onChange',
   });
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const onSubmit = async (data: SignupFormData) => {
+    setServerError(null);
     try {
-      // TODO: Implementar lógica de criação de conta com Supabase
-      console.log('Dados do formulário:', data);
-      // await createAccount(data.email, data.password);
-    } catch (error) {
-      console.error('Erro ao criar conta:', error);
+      // Chama o serviço centralizado que cria o usuário no Auth e o perfil
+      const result = await createUserProfile({ name: data.name, email: data.email, password: data.password });
+      if (!result.success) {
+        setServerError(result.error);
+        return;
+      }
+
+      // Sucesso: redireciona para /home
+      window.location.assign('/home');
+    } catch (err) {
+      setServerError('Erro inesperado ao criar conta. Tente novamente.');
+      console.error(err);
     }
   };
 
@@ -112,6 +123,10 @@ export function SignUpForm() {
             {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
             Criar conta
           </button>
+
+          {serverError && (
+            <p className="text-red-500 text-sm text-center mt-2">{serverError}</p>
+          )}
 
           {/* Divider */}
           <div className="relative my-6">
