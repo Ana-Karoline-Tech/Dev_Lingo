@@ -1,0 +1,41 @@
+.loading-screen.fade-in {
+  animation: fadeIn 0.8s ease-in-out forwards;
+}
+
+.loading-screen.fade-out {
+  animation: fadeOut 0.8s ease-in-out forwards;
+}
+
+.owl-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(-20px);
+  }
+  50% {
+    transform: translateY(20px);
+  }
+  100% {
+    transform: translateY(-20px);
+  }
+}
