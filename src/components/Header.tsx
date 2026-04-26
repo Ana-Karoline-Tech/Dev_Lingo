@@ -1,44 +1,49 @@
-import { LogOut } from 'lucide-react';
-import { IoDiamond, IoHeart } from 'react-icons/io5';
+import { Flame, Star, Trophy, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/authContext';
 
 interface HeaderProps {
-  diamonds?: number;
-  livesLabel?: string;
-  languageLabel?: string;
-  onLogout?: () => void;
+  xp?: number;
+  streak?: number;
+  level?: number;
 }
 
-export default function Header({
-  diamonds = 20,
-  livesLabel = '∞',
-  languageLabel = 'JS',
-  onLogout,
-}: HeaderProps) {
+export default function Header({ xp = 0, streak = 0, level = 1 }: HeaderProps) {
+  const { signOut } = useAuth();
+
   return (
-    <header className="w-full bg-white px-6 py-4">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
-        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-yellow-400 text-sm font-bold text-black">
-          {languageLabel}
+    <header className="sticky top-0 z-40 w-full border-b-2 border-slate-200 bg-white px-4 py-3">
+      <div className="mx-auto flex max-w-5xl items-center justify-between">
+        {/* Logo/Nome */}
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-black tracking-tighter text-[#8B00FF]">
+            DEV<span className="text-slate-700">LINGO</span>
+          </span>
         </div>
 
-        <div className="flex items-center gap-7">
-          <div className="flex items-center gap-2 text-gray-700">
-            <IoDiamond className="text-xl text-blue-500" />
-            <span className="text-3xl font-bold leading-none">{diamonds}</span>
+        {/* Indicadores */}
+        <div className="flex items-center gap-4 md:gap-8">
+          <div className="flex items-center gap-1.5" title="Ofensiva">
+            <Flame className="h-6 w-6 fill-orange-500 text-orange-500" />
+            <span className="text-lg font-bold text-slate-500">{streak}</span>
+          </div>
+          
+          <div className="flex items-center gap-1.5" title="XP Total">
+            <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+            <span className="text-lg font-bold text-slate-500">{xp}</span>
           </div>
 
-          <div className="flex items-center gap-2 text-gray-700">
-            <IoHeart className="text-xl text-red-500" />
-            <span className="text-3xl font-bold leading-none">{livesLabel}</span>
+          <div className="flex items-center gap-1.5" title="Nível">
+            <Trophy className="h-6 w-6 fill-blue-500 text-blue-500" />
+            <span className="text-lg font-bold text-slate-500">{level}</span>
           </div>
 
+          {/* Logout */}
           <button
-            type="button"
-            onClick={onLogout}
-            className="flex cursor-pointer items-center gap-2 text-gray-600 transition hover:text-gray-800"
+            onClick={signOut}
+            className="ml-2 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-red-500"
+            title="Sair"
           >
-            <LogOut className="h-5 w-5" />
-            <span className="text-3xl font-semibold">Sair</span>
+            <LogOut size={22} />
           </button>
         </div>
       </div>
