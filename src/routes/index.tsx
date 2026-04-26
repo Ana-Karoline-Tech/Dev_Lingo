@@ -29,11 +29,15 @@ function HomeComponent() {
 
       <div className="mx-auto mt-10 flex w-full max-w-6xl justify-center px-6 pb-16">
         <div className="relative h-[620px] w-[420px]">
-          <img src={greenStar} alt="Fase concluída" className="absolute left-[175px] top-0 h-[96px] w-[96px]" />
+          <img 
+            src={greenStar} 
+            alt="Fase concluída" 
+            className="absolute left-[175px] top-0 h-[96px] w-[96px] cursor-pointer transition-transform hover:scale-110 active:scale-95" 
+          />
           <img
             src={greenStar}
             alt="Fase concluída"
-            className="absolute left-[125px] top-[120px] h-[96px] w-[96px]"
+            className="absolute left-[125px] top-[120px] h-[96px] w-[96px] cursor-pointer transition-transform hover:scale-110 active:scale-95"
           />
           <img
             src={grayStar}
