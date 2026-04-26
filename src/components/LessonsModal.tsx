@@ -49,7 +49,7 @@ export default function LessonModal({
           <p className="text-lg text-purple-100">{lesson.description}</p>
           <div className="mt-4 flex items-center justify-center gap-2 font-bold text-[#58cc02]">
             <StarIcon />
-            <span>+{lesson.xp} XP</span>
+            <span>+{lesson.xp_reward} XP</span>
           </div>
         </div>
 
