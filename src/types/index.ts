@@ -1,10 +1,12 @@
 export interface Profile {
   id: string;
-  full_name: string | null;
-  xp: number;
-  level: number;
-  streak: number;
-  avatar_url: string | null;
+  full_name?: string | null;
+  name?: string;
+  email: string;
+  total_xp: number;
+  level?: number;
+  streak?: number;
+  avatar_url?: string | null;
   updated_at: string;
 }
 
@@ -17,13 +19,15 @@ export interface Lesson {
   id: string;
   title: string;
   description: string;
-  xp: number;
-  completed: boolean;
+  xp_reward: number;
+  unit_id: string;
+  completed?: boolean; // Campo virtual para UI
 }
 
 export interface Unit {
   id: string;
-  number: number;
   title: string;
-  lessons: Lesson[];
+  description: string;
+  level: string;
+  lessons?: Lesson[];
 }
