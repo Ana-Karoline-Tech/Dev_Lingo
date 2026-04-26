@@ -1,4 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
+import Header from '../components/Header';
+import UnitBanner from '../components/UnitBanner';
 import { supabase } from '../services/supabaseClient';
 
 export const Route = createFileRoute('/')({
@@ -22,17 +24,34 @@ function HomeComponent() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#8B00FF] p-4 text-white">
-      <div className="text-center space-y-6">
-        <h1 className="text-4xl font-bold">Bem-vindo ao Devlingo!</h1>
-        <p className="text-xl">Você está autenticado e pronto para aprender.</p>
-        
-        <button
-          onClick={handleLogout}
-          className="mt-8 px-8 py-3 bg-white text-[#8B00FF] font-bold rounded-xl hover:bg-opacity-90 transition"
-        >
-          Sair da conta
-        </button>
+    <div className="min-h-screen bg-[#ececec]">
+      <Header onLogout={handleLogout} />
+      <UnitBanner />
+
+      <div className="mx-auto mt-10 flex w-full max-w-6xl justify-center px-6 pb-16">
+        <div className="relative h-[620px] w-[420px]">
+          <div className="absolute left-[175px] top-0 h-24 w-24 rounded-full bg-[#64d329] shadow-[inset_0_-8px_0_#44a71a,0_8px_16px_rgba(0,0,0,0.16)]">
+            <span className="flex h-full items-center justify-center text-5xl text-white">★</span>
+          </div>
+
+          <div className="absolute left-[125px] top-[120px] h-24 w-24 rounded-full bg-[#64d329] shadow-[inset_0_-8px_0_#44a71a,0_8px_16px_rgba(0,0,0,0.16)]">
+            <span className="flex h-full items-center justify-center text-5xl text-white">★</span>
+          </div>
+
+          <div className="absolute left-[85px] top-[240px] h-24 w-24 rounded-full bg-[#f4f5f7] shadow-[inset_0_-8px_0_#cfd3d8,0_8px_16px_rgba(0,0,0,0.08)]">
+            <span className="flex h-full items-center justify-center text-5xl text-[#c5c8cd]">★</span>
+          </div>
+
+          <div className="absolute left-[125px] top-[360px] h-24 w-24 rounded-full bg-[#f4f5f7] shadow-[inset_0_-8px_0_#cfd3d8,0_8px_16px_rgba(0,0,0,0.08)]">
+            <span className="flex h-full items-center justify-center text-5xl text-[#c5c8cd]">★</span>
+          </div>
+
+          <div className="absolute left-[175px] top-[480px] h-24 w-24 rounded-full bg-[#f4f5f7] shadow-[inset_0_-8px_0_#cfd3d8,0_8px_16px_rgba(0,0,0,0.08)]">
+            <span className="flex h-full items-center justify-center text-5xl text-[#c5c8cd]">★</span>
+          </div>
+
+          <div className="absolute left-[245px] top-[185px] text-[110px] leading-none">🦉</div>
+      </div>
       </div>
     </div>
   );
