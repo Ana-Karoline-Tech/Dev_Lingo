@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { X, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { X, CheckCircle2, XCircle, Loader2, Target, Zap } from 'lucide-react';
+import devlingoChar from '../assets/images/devlingo-char.png';
 
 export const Route = createFileRoute('/lessons/$lessonId')({
   component: LessonPage,
@@ -25,6 +26,7 @@ function LessonPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong' | 'finished'>('idle');
+  const [correctCount, setCorrectCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,6 +54,7 @@ function LessonPage() {
 
     if (selectedOption?.is_correct) {
       setStatus('correct');
+      setCorrectCount(prev => prev + 1);
     } else {
       setStatus('wrong');
     }
@@ -63,10 +66,9 @@ function LessonPage() {
       setSelectedOptionId(null);
       setStatus('idle');
     } else {
-      // Finalizou a lição
+      // Mostrar tela de resultados
       setStatus('finished');
       await saveProgress();
-      navigate({ to: '/' });
     }
   };
 
@@ -87,6 +89,47 @@ function LessonPage() {
       <Loader2 className="h-10 w-10 animate-spin text-[#8B00FF]" />
     </div>
   );
+
+  // TELA DE RESULTADOS
+  if (status === 'finished') {
+    const totalXP = correctCount * 5; // Exemplo: 5 XP por acerto
+    const accuracy = Math.round((correctCount / questions.length) * 100);
+
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white p-6 text-center">
+        <img src={devlingoChar} alt="Devlingo Owl" className="mb-8 w-48 object-contain" />
+        
+        <h1 className="mb-12 text-4xl font-black text-[#ffc800]">Lição concluída!</h1>
+
+        <div className="mb-12 flex w-full max-w-md gap-4">
+          {/* Card XP */}
+          <div className="flex-1 rounded-2xl border-2 border-[#ffdb4d] bg-[#fff9db] p-6 shadow-sm">
+            <p className="mb-2 text-xs font-black uppercase tracking-wider text-[#f59f00]">Total de XP</p>
+            <div className="flex items-center justify-center gap-2">
+              <Zap className="fill-[#ffc800] text-[#ffc800]" size={24} />
+              <span className="text-2xl font-black text-[#f59f00]">{totalXP}</span>
+            </div>
+          </div>
+
+          {/* Card Precisão */}
+          <div className="flex-1 rounded-2xl border-2 border-[#b8f2d1] bg-[#e8fcf1] p-6 shadow-sm">
+            <p className="mb-2 text-xs font-black uppercase tracking-wider text-[#1cb0f6]">Boa</p>
+            <div className="flex items-center justify-center gap-2">
+              <Target className="text-[#37b24d]" size={24} strokeWidth={3} />
+              <span className="text-2xl font-black text-[#37b24d]">{accuracy}%</span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => navigate({ to: '/' })}
+          className="w-full max-w-md rounded-2xl bg-[#58cc02] py-4 text-xl font-black uppercase tracking-wide text-white shadow-[0_4px_0_#46a302] transition-all hover:bg-[#4ead02] active:translate-y-1 active:shadow-none"
+        >
+          Continuar
+        </button>
+      </div>
+    );
+  }
 
   const currentQuestion = questions[currentIdx];
 
@@ -148,7 +191,7 @@ function LessonPage() {
                 <div className="rounded-full bg-white p-2 text-[#ea2b2b]">
                   <XCircle size={32} />
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col text-left">
                   <span className="text-xl font-black text-[#ea2b2b]">Ops! Errado.</span>
                   <span className="text-sm font-bold text-[#ea2b2b]">Resposta correta: {currentQuestion.options.find(o => o.is_correct)?.option_text}</span>
                 </div>
