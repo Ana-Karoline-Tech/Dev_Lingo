@@ -13,7 +13,9 @@ type UserLessonRow = {
 export async function getUnits(): Promise<Unit[]> {
   const { data: unitsData, error: unitsError } = await supabase
     .from('units')
-    .select('*, lessons(*)')
+    .select(
+      '*, lessons(*, lesson_questions(*, lesson_question_options(*)))'
+    )
     .order('created_at', { ascending: true });
 
   if (unitsError) {
@@ -49,6 +51,12 @@ export async function getUnits(): Promise<Unit[]> {
     lessons: (unit.lessons ?? []).map((lesson) => ({
       ...lesson,
       completed: completedIds.has(lesson.id),
+      lesson_questions: (lesson.lesson_questions ?? []).sort((a, b) => a.position - b.position).map((question) => ({
+        ...question,
+        lesson_question_options: (question.lesson_question_options ?? []).sort(
+          (a, b) => a.position - b.position
+        ),
+      })),
     })),
   }));
 }
