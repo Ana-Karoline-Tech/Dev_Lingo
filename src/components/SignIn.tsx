@@ -3,6 +3,8 @@ import { Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { supabase } from '../services/supabaseClient';
+import { useState } from 'react';
 
 const signInSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -12,6 +14,8 @@ const signInSchema = z.object({
 type SignInFormData = z.infer<typeof signInSchema>;
 
 export default function SignIn(): JSX.Element {
+  const [error, setError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -25,10 +29,20 @@ export default function SignIn(): JSX.Element {
     },
   });
 
-  const onSubmit = async (_data: SignInFormData): Promise<void> => {
-    await new Promise<void>((resolve) => {
-      window.setTimeout(() => resolve(), 2000);
-    });
+  const onSubmit = async (data: SignInFormData): Promise<void> => {
+    setError(null);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (signInError) throw signInError;
+      
+      // O listener no __root.tsx detectará o evento SIGNED_IN e redirecionará para '/'
+    } catch (err: any) {
+      setError(err.message || 'Erro ao realizar login. Verifique suas credenciais.');
+    }
   };
 
   return (
@@ -36,6 +50,12 @@ export default function SignIn(): JSX.Element {
       <div className="w-full max-w-md rounded-3xl bg-white p-10 shadow-2xl">
         <h1 className="text-center text-3xl font-bold text-slate-900">Bem-vindo de volta!</h1>
         <p className="mt-3 text-center text-base text-gray-500">Entre na sua conta para continuar</p>
+
+        {error && (
+          <div className="mt-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-10 space-y-6" noValidate>
           <div>
