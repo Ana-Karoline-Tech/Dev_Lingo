@@ -22,6 +22,7 @@ export interface Lesson {
   xp_reward: number;
   unit_id: string;
   completed?: boolean; // Campo virtual para UI
+  lesson_questions?: LessonQuestion[];
 }
 
 export interface Unit {
@@ -30,4 +31,18 @@ export interface Unit {
   description: string;
   level: string;
   lessons?: Lesson[];
+}
+
+export interface LessonQuestion {
+  id: string;
+  question_text: string;
+  position: number;
+  lesson_question_options?: LessonQuestionOption[];
+}
+
+export interface LessonQuestionOption {
+  id: string;
+  option_text: string;
+  is_correct: boolean;
+  position: number;
 }
