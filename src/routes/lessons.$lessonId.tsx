@@ -1,24 +1,26 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { X, CheckCircle2, XCircle, Loader2, Target, Zap } from 'lucide-react';
+import { X, Heart, Loader2, CheckCircle2, XCircle, Target, Zap } from 'lucide-react';
 import devlingoChar from '../assets/images/devlingo-char.png';
 
 export const Route = createFileRoute('/lessons/$lessonId')({
-  component: LessonPage,
+  component: LessonScreen,
 });
+
+interface Option {
+  id: string;
+  option_text: string;
+  is_correct: boolean;
+}
 
 interface Question {
   id: string;
   question_text: string;
-  options: {
-    id: string;
-    option_text: string;
-    is_correct: boolean;
-  }[];
+  options: Option[];
 }
 
-function LessonPage() {
+function LessonScreen() {
   const { lessonId } = Route.useParams();
   const navigate = useNavigate();
   
@@ -26,6 +28,7 @@ function LessonPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong' | 'finished'>('idle');
+  const [lives, setLives] = useState(5);
   const [correctCount, setCorrectCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -50,23 +53,42 @@ function LessonPage() {
 
   const handleCheck = () => {
     const currentQuestion = questions[currentIdx];
-    const selectedOption = currentQuestion.options.find(opt => opt.id === selectedOptionId);
+    const selectedOption = currentQuestion.options.find(opt => opt.id === setSelectedOptionId); // Usando find pela lógica de comparação
 
-    if (selectedOption?.is_correct) {
+    // Lógica real de verificação baseada no ID selecionado
+    const isCorrect = currentQuestion.options.find(o => o.id === selectedOptionId)?.is_correct;
+
+    if (isCorrect) {
       setStatus('correct');
       setCorrectCount(prev => prev + 1);
     } else {
       setStatus('wrong');
+      setLives(prev => Math.max(0, prev - 1));
     }
   };
 
-  const handleContinue = async () => {
+  const handleSkip = () => {
     if (currentIdx < questions.length - 1) {
       setCurrentIdx(prev => prev + 1);
       setSelectedOptionId(null);
       setStatus('idle');
     } else {
-      // Mostrar tela de resultados
+      setStatus('finished');
+      saveProgress();
+    }
+  };
+
+  const handleContinue = async () => {
+    if (status === 'wrong' && lives === 0) {
+      navigate({ to: '/' });
+      return;
+    }
+
+    if (currentIdx < questions.length - 1) {
+      setCurrentIdx(prev => prev + 1);
+      setSelectedOptionId(null);
+      setStatus('idle');
+    } else {
       setStatus('finished');
       await saveProgress();
     }
@@ -90,19 +112,15 @@ function LessonPage() {
     </div>
   );
 
-  // TELA DE RESULTADOS
   if (status === 'finished') {
-    const totalXP = correctCount * 5; // Exemplo: 5 XP por acerto
+    const totalXP = correctCount * 5;
     const accuracy = Math.round((correctCount / questions.length) * 100);
 
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-white p-6 text-center">
         <img src={devlingoChar} alt="Devlingo Owl" className="mb-8 w-48 object-contain" />
-        
         <h1 className="mb-12 text-4xl font-black text-[#ffc800]">Lição concluída!</h1>
-
         <div className="mb-12 flex w-full max-w-md gap-4">
-          {/* Card XP */}
           <div className="flex-1 rounded-2xl border-2 border-[#ffdb4d] bg-[#fff9db] p-6 shadow-sm">
             <p className="mb-2 text-xs font-black uppercase tracking-wider text-[#f59f00]">Total de XP</p>
             <div className="flex items-center justify-center gap-2">
@@ -110,17 +128,14 @@ function LessonPage() {
               <span className="text-2xl font-black text-[#f59f00]">{totalXP}</span>
             </div>
           </div>
-
-          {/* Card Precisão */}
           <div className="flex-1 rounded-2xl border-2 border-[#b8f2d1] bg-[#e8fcf1] p-6 shadow-sm">
-            <p className="mb-2 text-xs font-black uppercase tracking-wider text-[#1cb0f6]">Boa</p>
+            <p className="mb-2 text-xs font-black uppercase tracking-wider text-[#1cb0f6]">Precisão</p>
             <div className="flex items-center justify-center gap-2">
               <Target className="text-[#37b24d]" size={24} strokeWidth={3} />
               <span className="text-2xl font-black text-[#37b24d]">{accuracy}%</span>
             </div>
           </div>
         </div>
-
         <button
           onClick={() => navigate({ to: '/' })}
           className="w-full max-w-md rounded-2xl bg-[#58cc02] py-4 text-xl font-black uppercase tracking-wide text-white shadow-[0_4px_0_#46a302] transition-all hover:bg-[#4ead02] active:translate-y-1 active:shadow-none"
@@ -132,83 +147,109 @@ function LessonPage() {
   }
 
   const currentQuestion = questions[currentIdx];
+  const progress = ((currentIdx + 1) / questions.length) * 100;
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      {/* Header com Progresso */}
-      <header className="flex items-center gap-4 p-6">
-        <button onClick={() => navigate({ to: '/' })} className="text-slate-400 hover:text-slate-600">
+      {/* Header */}
+      <header className="mx-auto flex w-full max-w-2xl items-center gap-4 p-6">
+        <button onClick={() => navigate({ to: '/' })} className="text-gray-400 hover:text-gray-600 transition">
           <X size={28} />
         </button>
-        <div className="h-4 flex-1 rounded-full bg-slate-100">
+        
+        <div className="h-4 flex-1 rounded-full bg-gray-200">
           <div 
             className="h-full rounded-full bg-[#58cc02] transition-all duration-500" 
-            style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
+            style={{ width: `${progress}%` }}
           />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Heart className="fill-red-500 text-red-500" size={24} />
+          <span className="text-lg font-bold text-rose-500">{lives}</span>
         </div>
       </header>
 
-      {/* Pergunta */}
+      {/* Conteúdo Central */}
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 pt-10">
-        <h1 className="text-3xl font-bold text-slate-800">
+        <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">
           {currentQuestion?.question_text}
-        </h1>
+        </h2>
 
-        <div className="mt-8 space-y-3">
-          {currentQuestion?.options.map((option) => (
+        <div className="mt-10 space-y-4">
+          {currentQuestion?.options.map((option, index) => (
             <button
               key={option.id}
               onClick={() => status === 'idle' && setSelectedOptionId(option.id)}
-              className={`w-full rounded-2xl border-2 border-b-4 p-4 text-left text-lg font-bold transition-all active:border-b-2 ${
+              className={`flex w-full items-center justify-between rounded-xl border-2 p-4 text-left transition-all ${
                 selectedOptionId === option.id
-                  ? 'border-[#84d8ff] bg-[#ddf4ff] text-[#1899d6]'
-                  : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}
+                  ? 'border-blue-400 bg-blue-100 text-slate-900'
+                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+              } ${status !== 'idle' ? 'cursor-default' : ''}`}
             >
-              {option.option_text}
+              <span className="text-lg font-bold">{option.option_text}</span>
+              <div className="flex h-6 w-6 items-center justify-center rounded-md border border-gray-300 text-xs text-gray-400 font-medium">
+                {index + 1}
+              </div>
             </button>
           ))}
         </div>
       </main>
 
-      {/* Footer de Verificação */}
-      <footer className={`border-t-2 p-6 transition-colors ${
-        status === 'correct' ? 'border-[#d7ffb8] bg-[#d7ffb8]' : 
-        status === 'wrong' ? 'border-[#ffdfe0] bg-[#ffdfe0]' : 'border-slate-100'
+      {/* Footer */}
+      <footer className={`mt-auto border-t border-gray-100 p-6 transition-colors ${
+        status === 'correct' ? 'bg-[#d7ffb8]' : 
+        status === 'wrong' ? 'bg-[#ffdfe0]' : 'bg-white'
       }`}>
         <div className="mx-auto flex max-w-2xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            {status === 'correct' && (
-              <>
-                <div className="rounded-full bg-white p-2 text-[#58cc02]">
-                  <CheckCircle2 size={32} />
-                </div>
-                <span className="text-xl font-black text-[#58a700]">Muito bem!</span>
-              </>
-            )}
-            {status === 'wrong' && (
-              <>
-                <div className="rounded-full bg-white p-2 text-[#ea2b2b]">
-                  <XCircle size={32} />
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-xl font-black text-[#ea2b2b]">Ops! Errado.</span>
-                  <span className="text-sm font-bold text-[#ea2b2b]">Resposta correta: {currentQuestion.options.find(o => o.is_correct)?.option_text}</span>
-                </div>
-              </>
-            )}
-          </div>
-
-          <button
-            onClick={status === 'idle' ? handleCheck : handleContinue}
-            disabled={!selectedOptionId}
-            className={`rounded-2xl px-12 py-3 text-lg font-black uppercase tracking-wide transition-all disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 ${
-              status === 'correct' ? 'bg-[#58cc02] text-white' :
-              status === 'wrong' ? 'bg-[#ea2b2b] text-white' : 'bg-[#58cc02] text-white'
-            }`}
-          >
-            {status === 'idle' ? 'Verificar' : 'Continuar'}
-          </button>
+          {status === 'idle' ? (
+            <>
+              <button
+                onClick={handleSkip}
+                className="rounded-xl bg-gray-200 px-8 py-3 text-sm font-bold uppercase tracking-wider text-gray-700 transition hover:bg-gray-300"
+              >
+                Pular
+              </button>
+              <button
+                disabled={!selectedOptionId}
+                onClick={handleCheck}
+                className="rounded-xl bg-[#58cc02] px-10 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#4ead02] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+              >
+                Verificar
+              </button>
+            </>
+          ) : (
+            <div className="flex w-full items-center justify-between">
+              <div className="flex items-center gap-4">
+                {status === 'correct' ? (
+                  <>
+                    <div className="rounded-full bg-white p-1 text-[#58cc02]">
+                      <CheckCircle2 size={32} />
+                    </div>
+                    <span className="text-xl font-black text-[#58a700]">Muito bem!</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="rounded-full bg-white p-1 text-[#ea2b2b]">
+                      <XCircle size={32} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xl font-black text-[#ea2b2b]">Ops! Errado.</span>
+                      <span className="text-sm font-bold text-[#ea2b2b]">Resposta correta: {currentQuestion.options.find(o => o.is_correct)?.option_text}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <button
+                onClick={handleContinue}
+                className={`rounded-xl px-10 py-3 text-sm font-bold uppercase tracking-wider text-white transition ${
+                  status === 'correct' ? 'bg-[#58cc02] hover:bg-[#4ead02]' : 'bg-[#ea2b2b] hover:bg-[#c92222]'
+                }`}
+              >
+                Continuar
+              </button>
+            </div>
+          )}
         </div>
       </footer>
     </div>
