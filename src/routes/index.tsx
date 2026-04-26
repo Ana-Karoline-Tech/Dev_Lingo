@@ -6,6 +6,7 @@ import LessonModal from '../components/LessonsModal';
 import { supabase } from '../services/supabaseClient';
 import { Lesson } from '../types';
 import { getUnits } from '../services/unitsService';
+import { setUnitsCache } from '../services/unitsCache';
 import greenStar from '../assets/images/green-star.png';
 import grayStar from '../assets/images/gray-star.png';
 import devlingoChar from '../assets/images/devlingo-char.png';
@@ -27,7 +28,10 @@ export const Route = createFileRoute('/')({
 
 function HomeComponent() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [currentUnit, setCurrentUnit] = useState<{title: string, number: number}>({ title: 'Carregando...', number: 1 });
+  const [currentUnit, setCurrentUnit] = useState<{ title: string; number: number; level?: string }>({
+    title: 'Carregando...',
+    number: 1,
+  });
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -36,6 +40,7 @@ function HomeComponent() {
     async function fetchData() {
       try {
         const units = await getUnits();
+        setUnitsCache(units);
         
         // Combina todas as lições de todas as unidades em uma lista única
         const allLessons = units.flatMap(unit => unit.lessons ?? []);
@@ -47,6 +52,7 @@ function HomeComponent() {
           setCurrentUnit({
             title: units[0].title,
             number: 1,
+            level: units[0].level,
           });
         }
       } catch (error) {
@@ -119,6 +125,7 @@ function HomeComponent() {
           onClose={() => setSelectedLesson(null)} 
           lesson={selectedLesson}
           unitNumber={currentUnit.number}
+          unitLevel={currentUnit.level}
           onStartLesson={startLesson}
         />
       )}
