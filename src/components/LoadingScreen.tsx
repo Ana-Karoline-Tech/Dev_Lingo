@@ -7,7 +7,11 @@ type AnimationPhase = 'fade-in' | 'fade-out';
 const FADE_DURATION_MS = 800;
 const VISIBLE_DURATION_MS = 2000;
 
-export default function LoadingScreen() {
+interface LoadingScreenProps {
+  onFinished?: () => void;
+}
+
+export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
   const [isVisible, setIsVisible] = useState<boolean>(true);
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>('fade-in');
 
@@ -18,13 +22,14 @@ export default function LoadingScreen() {
 
     const unmountTimer = window.setTimeout(() => {
       setIsVisible(false);
+      onFinished?.();
     }, FADE_DURATION_MS + VISIBLE_DURATION_MS + FADE_DURATION_MS);
 
     return () => {
       window.clearTimeout(fadeOutTimer);
       window.clearTimeout(unmountTimer);
     };
-  }, []);
+  }, [onFinished]);
 
   if (!isVisible) {
     return null;
@@ -32,7 +37,7 @@ export default function LoadingScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex h-screen w-screen flex-col items-center justify-center gap-8 bg-purple-600 loading-screen ${animationPhase}`}
+      className={`fixed inset-0 z-50 flex h-screen w-screen flex-col items-center justify-center gap-8 bg-[#8B00FF] loading-screen ${animationPhase}`}
       aria-hidden={false}
     >
       <img
