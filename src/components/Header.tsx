@@ -43,10 +43,11 @@ export default function Header({ xp = 0, streak = 0, level = 1 }: HeaderProps) {
           {/* Logout */}
           <button
             onClick={signOut}
-            className="ml-2 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-red-500"
+            className="ml-2 flex items-center gap-2 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-red-500"
             title="Sair"
           >
             <LogOut size={22} />
+            <span className="hidden text-sm font-bold md:block">SAIR</span>
           </button>
         </div>
       </div>
