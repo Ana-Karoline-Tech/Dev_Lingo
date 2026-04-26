@@ -7,9 +7,16 @@ interface LessonModalProps {
   onClose: () => void;
   lesson: Lesson;
   unitNumber: number;
+  onStartLesson: (lessonId: string) => void;
 }
 
-export default function LessonModal({ isOpen, onClose, lesson, unitNumber }: LessonModalProps) {
+export default function LessonModal({
+  isOpen,
+  onClose,
+  lesson,
+  unitNumber,
+  onStartLesson,
+}: LessonModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -54,8 +61,7 @@ export default function LessonModal({ isOpen, onClose, lesson, unitNumber }: Les
               : 'bg-white text-[#8B00FF] hover:bg-purple-50'
           }`}
           onClick={() => {
-            console.log(`Iniciando lição: ${lesson.id}`);
-            // Aqui futuramente faremos o navigate para a tela de exercícios
+            onStartLesson(lesson.id);
           }}
         >
           {lesson.completed ? (
