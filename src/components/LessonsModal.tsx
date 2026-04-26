@@ -7,6 +7,7 @@ interface LessonModalProps {
   onClose: () => void;
   lesson: Lesson;
   unitNumber: number;
+  unitLevel?: string;
   onStartLesson: (lessonId: string) => void;
 }
 
@@ -15,6 +16,7 @@ export default function LessonModal({
   onClose,
   lesson,
   unitNumber,
+  unitLevel,
   onStartLesson,
 }: LessonModalProps) {
   if (!isOpen) return null;
@@ -39,7 +41,8 @@ export default function LessonModal({
         {/* Cabeçalho */}
         <div className="mb-6 text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-purple-200">
-            Unidade {unitNumber} • Lição
+            Unidade {unitNumber}
+            {unitLevel ? ` • ${unitLevel}` : ''} • Lição
           </p>
           <h2 className="mt-2 text-3xl font-black text-white">{lesson.title}</h2>
         </div>
