@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { X, Heart, Loader2, CheckCircle2, XCircle, Target, Zap } from 'lucide-react';
 import devlingoChar from '../assets/images/devlingo-char.png';
+import { findLessonInCache, getUnitsCache, setUnitsCache } from '../services/unitsCache';
+import { getUnits } from '../services/unitsService';
 
 export const Route = createFileRoute('/lessons/$lessonId')({
   component: LessonScreen,
@@ -34,18 +36,32 @@ function LessonScreen() {
 
   useEffect(() => {
     async function fetchQuestions() {
-      const { data, error } = await supabase
-        .from('lesson_questions')
-        .select(`
-          id,
-          question_text,
-          options:lesson_question_options(id, option_text, is_correct)
-        `)
-        .eq('lesson_id', lessonId)
-        .order('position', { ascending: true });
+      try {
+        let lesson = findLessonInCache(lessonId);
 
-      if (error) console.error(error);
-      else setQuestions(data || []);
+        if (!lesson || !lesson.lesson_questions?.length) {
+          const units = getUnitsCache();
+          if (!units.length) {
+            const fetchedUnits = await getUnits();
+            setUnitsCache(fetchedUnits);
+          }
+          lesson = findLessonInCache(lessonId);
+        }
+
+        const parsedQuestions: Question[] = (lesson?.lesson_questions ?? []).map((question) => ({
+          id: question.id,
+          question_text: question.question_text,
+          options: (question.lesson_question_options ?? []).map((option) => ({
+            id: option.id,
+            option_text: option.option_text,
+            is_correct: option.is_correct,
+          })),
+        }));
+
+        setQuestions(parsedQuestions);
+      } catch (error) {
+        console.error('Erro ao carregar questões da lição:', error);
+      }
       setLoading(false);
     }
     fetchQuestions();
@@ -53,9 +69,6 @@ function LessonScreen() {
 
   const handleCheck = () => {
     const currentQuestion = questions[currentIdx];
-    const selectedOption = currentQuestion.options.find(opt => opt.id === setSelectedOptionId); // Usando find pela lógica de comparação
-
-    // Lógica real de verificação baseada no ID selecionado
     const isCorrect = currentQuestion.options.find(o => o.id === selectedOptionId)?.is_correct;
 
     if (isCorrect) {
@@ -111,6 +124,21 @@ function LessonScreen() {
       <Loader2 className="h-10 w-10 animate-spin text-[#8B00FF]" />
     </div>
   );
+
+  if (!questions.length) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white p-6 text-center">
+        <h1 className="text-3xl font-black text-gray-800">Nenhuma questão encontrada</h1>
+        <p className="mt-3 text-gray-500">Esta lição ainda não possui perguntas cadastradas.</p>
+        <button
+          onClick={() => navigate({ to: '/' })}
+          className="mt-8 rounded-xl bg-[#58cc02] px-8 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#4ead02]"
+        >
+          Voltar
+        </button>
+      </div>
+    );
+  }
 
   if (status === 'finished') {
     const totalXP = correctCount * 5;
